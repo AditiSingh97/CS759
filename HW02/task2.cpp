@@ -16,9 +16,9 @@ int main(int argc, char **argv){
     std::size_t n = atoi(argv[1]);
     std::size_t m = atoi(argv[2]);
 
-    float *image = new float[n*n];
-    float *mask = new float[m*m];
-    float *output = new float[n*n];
+    float *image = new float[(n*n)];
+    float *mask = new float[(m*m)];
+    float *output = new float[(n*n)];
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -49,7 +49,7 @@ int main(int argc, char **argv){
 
     std::cout << duration_msec.count() << std::endl << *output << std::endl << *(output + (n*n) - 1) << std::endl;
 
-    delete image;
-    delete mask;
-    delete output;
+    delete [] image;
+    delete [] mask;
+    delete [] output;
 }

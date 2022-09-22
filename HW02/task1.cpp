@@ -36,6 +36,6 @@ int main(int argc, char **argv){
 
     std::cout << duration_msec.count() << std::endl << *output << std::endl << *(output + n -1) << std::endl;
 
-    delete arr;
-    delete output;
+    delete [] arr;
+    delete [] output;
 }

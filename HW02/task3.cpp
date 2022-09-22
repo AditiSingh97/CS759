@@ -73,4 +73,7 @@ int main(int argc, char **argv){
 
     std::cout << duration_msec.count() << std::endl << *(C + (n*n) - 1) << std::endl;
 
+    delete [] A;
+    delete [] B;
+    delete [] C;
 }
