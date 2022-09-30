@@ -40,5 +40,8 @@ int main(int argc, char* argv[]) {
         std::printf("%d ", hA[i]);
     }
     std::printf("\n");
+
+    //freeing memory
+    cudaFree(dA);
     return 0;
 }

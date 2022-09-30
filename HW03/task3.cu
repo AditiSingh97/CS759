@@ -4,16 +4,6 @@
 #include <random>
 #include "vscale.cuh"
 
-const unsigned int nThreads = 8;
-
-//kernel to compute the result
-__global__ void series(int *dA, int a) {
-    if(threadIdx.x < nThreads)
-    {
-        dA[blockIdx.x * nThreads + threadIdx.x] = a * threadIdx.x + blockIdx.x;
-    }
-}
-
 int main(int argc, char* argv[]) {
     if(argc != 2){
         exit(-1);
@@ -65,6 +55,12 @@ int main(int argc, char* argv[]) {
 
     //printing results
     std::printf("%f\n%f\n%f\n", ms, b[0], b[n-1]);
+
+    //freeing memory
+    delete [] a;
+    delete [] b;
+    cudaFree(da);
+    cudaFree(db);
 
     return 0;
 }

@@ -16,6 +16,7 @@ __global__ void factorial() {
 }
 
 int main(int argc, char* argv[]) {
+    //kernel call
     factorial<<<1, 8>>>();
     cudaDeviceSynchronize();
     return 0;
