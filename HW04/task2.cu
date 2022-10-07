@@ -26,9 +26,12 @@ int main(int argc, char* argv[]) {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-1, 1);
 
+    //random number generation
+    //image initialization
     for(long unsigned int i = 0; i < n; i++){
         h_image[i] = dist(gen);
     }
+    //mask initialization
     for(long unsigned int i = 0; i < 2*R + 1; i++){
         h_mask[i] = dist(gen);
     }

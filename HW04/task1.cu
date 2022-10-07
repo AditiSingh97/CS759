@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
+    //parsing input arguments
     long unsigned int n = atoi(argv[1]);
     long unsigned int threads_per_block = atoi(argv[2]);
     long unsigned int SIZE = n*n;
@@ -63,7 +64,6 @@ int main(int argc, char* argv[]) {
     cudaMemcpy(h_C, C, SIZE*sizeof(float), cudaMemcpyDeviceToHost);
 
     //printing output
-    
     std::printf("%f\n%f\n", h_C[SIZE - 1], ms);
 
     cudaFree(A);

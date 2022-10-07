@@ -23,7 +23,7 @@ __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t n
 }
 
 void matmul(const float* A, const float* B, float* C, size_t n, unsigned int threads_per_block){
-    //computing the correct number of blocks
+    //computing the correct number of blocks using ceiling function
     double q = ((double)(n*n))/((double)threads_per_block);
     long unsigned int num_blocks = ceil(q);
     //kernel call
