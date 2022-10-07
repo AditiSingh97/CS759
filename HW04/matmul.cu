@@ -6,7 +6,7 @@
 
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t n){
-    if((blockIdx.x *blockDim.x + threadIdx.x) <= (n*n)){
+    if((blockIdx.x *blockDim.x + threadIdx.x) < (n*n)){
         //elem: absolute position of new element in C pointer
         long unsigned int elem = blockIdx.x *blockDim.x + threadIdx.x;
         //row: row of matrix corresponding to C which has elem
