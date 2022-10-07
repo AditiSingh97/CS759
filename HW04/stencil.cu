@@ -23,13 +23,21 @@ __global__ void stencil_kernel(const float* image, const float* mask, float* out
             }
         }else{
             //M (for mask) ; R (left padding) ; blockDim.x (==threads_per_block) (for each output) ; R (right padding)
-            if((threadIdx.x == blockDim.x - 1) || (blockIdx.x * blockDim.x + threadIdx.x == n-1)){
-                unsigned long offset = M + blockDim.x + R - 1;
-                for(long int i = offset; i <= offset + R; i++){
-                    if(threadid + (i - offset) > (n-1)){
-                        shMem[i] = 1.0;
-                    }else{
-                        shMem[i] = image[threadid + (i - offset)];
+            if((threadIdx.x == blockDim.x - 1) || (threadid == n-1)){
+                if(threadid != n-1)
+                {
+                    unsigned long offset = M + blockDim.x + R - 1;
+                    for(long int i = offset; i <= offset + R; i++){
+                        if(threadid + (i - offset) > (n-1)){
+                            shMem[i] = 1.0;
+                        }else{
+                            shMem[i] = image[threadid + (i - offset)];
+                        }
+                    }
+                }else{
+                    shMem[M + R + threadIdx.x] = image[threadid];
+                    for(long int i = 1; i <= R; i++){
+                        shMem[M + threadIdx.x + R + i] = 1.0;
                     }
                 }
             }else{
@@ -41,8 +49,8 @@ __global__ void stencil_kernel(const float* image, const float* mask, float* out
     __syncthreads();
     unsigned int threadid = blockIdx.x * blockDim.x + threadIdx.x;
     if(threadid < n){
-        unsigned long op_off = M + blockDim.x + 2*R + threadIdx.x;
-        unsigned long pos = M + R + threadIdx.x;
+        int op_off = M + blockDim.x + 2*R + threadIdx.x;
+        int pos = M + R + threadIdx.x;
         shMem[op_off] = 0.0;
         signed int neg = (-1) * (signed)R;
         for(signed int j = neg; j <= (signed)R; j++){
