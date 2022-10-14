@@ -14,23 +14,35 @@ int main(int argc, char* argv[]) {
 
     unsigned int SIZE = n*n;
     //allocating host memory for input matrices
-    float *A, *B, *C;
-    cudaMallocManaged(&A, SIZE*sizeof(float));
-    cudaMallocManaged(&B, SIZE*sizeof(float));
-    cudaMallocManaged(&C, SIZE*sizeof(float));
+    double *A, *B, *C;
+    cudaMallocManaged(&A, SIZE*sizeof(double));
+    cudaMallocManaged(&B, SIZE*sizeof(double));
+    cudaMallocManaged(&C, SIZE*sizeof(double));
 
     //random number generation
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-1, 1);
 
-    for(long unsigned int i = 0; i < SIZE; i++){
-        A[i] = (float)i;
+    for(unsigned int i = 0; i < SIZE; i++){
+        A[i] = (double)i;
     }
     for(unsigned int i = 0; i < n; i++){
-	    B[i*n + i] = 1.0;
+	    B[i*n + i] = (double)1.0;
     }
-
+    for(unsigned int i = 0; i < n; i++){
+	    for(unsigned int j = 0; j < n; j++){
+		    std::printf("A[%u][%u]: %f, ", i, j, A[i * n + j]);
+	    }
+	    std::printf("\n");
+    }
+    
+    for(unsigned int i = 0; i < n; i++){
+	    for(unsigned int j = 0; j < n; j++){
+		    std::printf("B[%u][%u]: %f, ", i, j, B[i * n + j]);
+	    }
+	    std::printf("\n");
+    }
     //creating cuda timing variables
     cudaEvent_t start;
     cudaEvent_t stop;
@@ -39,7 +51,7 @@ int main(int argc, char* argv[]) {
 
     cudaEventRecord(start);
     //kernel call
-    matmul_2(A, B, C, n, block_dim);
+    matmul_3(A, B, C, n, block_dim);
     cudaEventRecord(stop);
 
     // Get the elapsed time in milliseconds
@@ -48,8 +60,9 @@ int main(int argc, char* argv[]) {
     std::printf("final answer C\n");
     for(unsigned int i = 0; i < n; i++){
 	    for(unsigned int j = 0; j < n; j++){
-		    std::printf("C[%u][%u]=%f\n",i,j,C[i*n+j]);
+		    std::printf("C[%u][%u]=%f, ",i,j,C[i*n+j]);
 	    }
+	    std::printf("\n");
     }
 
     return 0;
