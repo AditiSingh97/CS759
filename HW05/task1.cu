@@ -4,6 +4,16 @@
 
 #include "reduce.cuh"
 
+void verifier(float *A, float *result, unsigned int n){
+	double threshold = 1e-5;
+	float ground_truth = 0.0;
+	for(unsigned int i = 0; i < n; i++){
+		ground_truth += A[i];
+	}
+//	printf("ground_truth: %f, result: %f\n", ground_truth, result[0]);
+//	printf("difference between result and ground_truth: %f\n", result[0] - ground_truth);
+}
+
 int main(int argc, char* argv[]) {
     if(argc != 3){
         exit(-1);
@@ -24,8 +34,11 @@ int main(int argc, char* argv[]) {
     std::uniform_real_distribution<> dist(-1, 1);
 
     for(long unsigned int i = 0; i < N; i++){
-        h_A[i] = (float)i;
+        h_A[i] = dist(gen);
     }
+    for(unsigned int i = 0; i < num_blocks; i++){
+	   h_B[i] = (float)0.0;
+    } 
 
     // Allocate vectors in device memory
     float *A, *B;
@@ -34,6 +47,7 @@ int main(int argc, char* argv[]) {
 
     //copy from host memory to device memory
     cudaMemcpy(A, h_A, N*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(B, h_B, num_blocks*sizeof(float), cudaMemcpyHostToDevice);
 
     //creating cuda timing variables
     cudaEvent_t start;
@@ -49,9 +63,13 @@ int main(int argc, char* argv[]) {
     // Get the elapsed time in milliseconds
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
-    cudaMemcpy(h_A, A, 1*sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_B, B, 1*sizeof(float), cudaMemcpyDeviceToHost);
-    std::printf("final answer A %f\n", h_A[0]);
-
+    float *result = new float;
+    cudaMemcpy(result, A, 1*sizeof(float), cudaMemcpyDeviceToHost);
+    printf("%.6f\n%.6f\n", result, ms);
+    cudaFree(A);
+    cudaFree(B);
+    delete [] h_A;
+    delete [] h_B;
+    delete result;
     return 0;
 }

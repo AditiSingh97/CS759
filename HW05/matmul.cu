@@ -4,6 +4,8 @@
 
 #include "matmul.cuh"
 
+
+//code taken from CS 759 lecture 12
 template <typename T>
 __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
     // Shared memory for the sub-matrices (tiles) of  A and B
@@ -39,10 +41,10 @@ __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
 
    // The element of the block sub-matrix that is computed
    // by the thread
-   T Csub = (T)0;
    // Loop over all the sub-matrices (tiles) of A and B required to
    // compute the block sub-matrix; moving in A left to right in
    // a row, and in B from top to bottom in a column
+   T Csub = 0;
    for (int a = aBegin, b = bBegin; a <= aEnd; a += aStep, b += bStep) {
 	   // Load tiles from global memory into shared memory; each
 	   // thread loads one element of the two tiles from A & B
@@ -76,15 +78,12 @@ __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
 	  __syncthreads();
    }
    
-   printf("block.x: %u, block.y: %u, thread.x: %u, thread.y: %u, Csub = %f\n",blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y, (double)Csub);
-   __syncthreads();
    // Write the block sub-matrix to global memory;
    // each thread writes one element
    
    unsigned int Row = blockIdx.y*blockDim.x + threadIdx.y;
    unsigned int Col = blockIdx.x*blockDim.y + threadIdx.x;
    int c = n * blockDim.y * by + blockDim.x * bx;
-//   if((c+n*ty+tx) < (n*n))
    if((Row < n) && (Col < n))
    {
 	   C[c + n * ty + tx] = Csub;
