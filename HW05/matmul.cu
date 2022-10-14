@@ -8,7 +8,7 @@ template <typename T>
 __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
     // Shared memory for the sub-matrices (tiles) of  A and B
     extern __shared__ char smem[];
-    T *sdata = (T *)smem;
+    T * sdata = reinterpret_cast<T *>(smem);
     T *As = sdata;
     T *Bs = sdata + blockDim.x * blockDim.x;
     
@@ -39,7 +39,7 @@ __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
 
    // The element of the block sub-matrix that is computed
    // by the thread
-   T Csub = 0;
+   T Csub = (T)0;
    // Loop over all the sub-matrices (tiles) of A and B required to
    // compute the block sub-matrix; moving in A left to right in
    // a row, and in B from top to bottom in a column
@@ -48,8 +48,18 @@ __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
 	   // thread loads one element of the two tiles from A & B
 	   As[ty * blockDim.x + tx] = (T)0.0;
 	   Bs[ty * blockDim.x + tx] = (T)0.0;
-	   As[ty * blockDim.x + tx] = A[a + n * ty + tx];
-	   Bs[ty * blockDim.x + tx] = B[b + n * ty + tx];
+	   if((ty < n) && (tx < n)){
+		   As[ty * blockDim.x + tx] = A[a + n * ty + tx];
+	   }else{
+		   As[ty * blockDim.x + tx] = (T)0.0;
+	   }
+
+	   if((ty < n) && (tx < n)){
+		   Bs[ty * blockDim.x + tx] = B[b + n * ty + tx];
+	   }
+	   else{
+		   Bs[ty * blockDim.x + tx] = (T) 0.0;
+	   }
 
            // Synchronize to make sure the matrices are loaded
            __syncthreads();
@@ -66,10 +76,19 @@ __global__ void matmul(const T *A, const T *B, T *C, unsigned int n){
 	  __syncthreads();
    }
    
+   printf("block.x: %u, block.y: %u, thread.x: %u, thread.y: %u, Csub = %f\n",blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y, (double)Csub);
+   __syncthreads();
    // Write the block sub-matrix to global memory;
    // each thread writes one element
-   int c = n * blockDim.x * by + blockDim.x * bx;
-   C[c + n * ty + tx] = Csub;
+   
+   unsigned int Row = blockIdx.y*blockDim.x + threadIdx.y;
+   unsigned int Col = blockIdx.x*blockDim.y + threadIdx.x;
+   int c = n * blockDim.y * by + blockDim.x * bx;
+//   if((c+n*ty+tx) < (n*n))
+   if((Row < n) && (Col < n))
+   {
+	   C[c + n * ty + tx] = Csub;
+   }
 }
 
 __host__ void matmul_1(const int *A, const int *B, int *C, unsigned int n, unsigned int block_dim){
@@ -77,7 +96,6 @@ __host__ void matmul_1(const int *A, const int *B, int *C, unsigned int n, unsig
 	    // the matrix dimensions are multiples of BLOCK_SIZE
 	    dim3 dimBlock(block_dim, block_dim);
 	    unsigned q = ceil((double)n/(double)dimBlock.x);
-	    std::printf("grid dimension: %u\n", q);
 	    dim3 dimGrid(q, q);
 	    // Launch the device computation
 	    matmul<int><<<dimGrid, dimBlock, 2*block_dim*block_dim*sizeof(int)>>>(A, B, C, n);
@@ -88,7 +106,6 @@ __host__ void matmul_2(const float *A, const float *B, float *C, unsigned int n,
 	    // the matrix dimensions are multiples of BLOCK_SIZE
 	    dim3 dimBlock(block_dim, block_dim);
 	    unsigned q = ceil((double)n/(double)dimBlock.x);
-	    std::printf("grid dimension: %u\n", q);
 	    dim3 dimGrid(q, q);
 	    // Launch the device computation
 	    matmul<float><<<dimGrid, dimBlock, 2*block_dim*block_dim*sizeof(float)>>>(A, B, C, n);
@@ -99,7 +116,6 @@ __host__ void matmul_3(const double *A, const double *B, double *C, unsigned int
 	    // the matrix dimensions are multiples of BLOCK_SIZE
 	    dim3 dimBlock(block_dim, block_dim);
 	    unsigned q = ceil((double)n/(double)dimBlock.x);
-	    std::printf("grid dimension: %u\n", q);
 	    dim3 dimGrid(q, q);
 	    // Launch the device computation
 	    matmul<double><<<dimGrid, dimBlock, 2*block_dim*block_dim*sizeof(double)>>>(A, B, C, n);
