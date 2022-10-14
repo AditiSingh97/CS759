@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     cudaEventElapsedTime(&ms, start, stop);
     float *result = new float;
     cudaMemcpy(result, A, 1*sizeof(float), cudaMemcpyDeviceToHost);
-    printf("%.6f\n%.6f\n", result, ms);
+    printf("%.6f\n%.6f\n", result[0], ms);
     cudaFree(A);
     cudaFree(B);
     delete [] h_A;
