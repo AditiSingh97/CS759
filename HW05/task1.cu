@@ -59,6 +59,16 @@ int main(int argc, char* argv[]) {
     //kernel call
     reduce(&A, &B, N, threads_per_block);
     cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    // Get the elapsed time in milliseconds
+    float ms3;
+    cudaEventElapsedTime(&ms3, start, stop);
+    printf("%f\n%f\n%f\n", C_double[0], C_double[SIZE-1], ms3);
+
+    cudaFree(A_double);
+    cudaFree(B_double);
+    cudaFree(C_double);
 
     // Get the elapsed time in milliseconds
     float ms;
