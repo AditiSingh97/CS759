@@ -9,18 +9,19 @@ __global__ void hillis_steele(const float *g_idata, float *g_odata, float *block
 
     int thid = threadIdx.x;
     unsigned int idx = thid + blockDim.x * blockIdx.x;
+    if(idx < n){
     unsigned int n_block = 0;
     if((blockIdx.x+1) * blockDim.x < n){
 	    n_block = blockDim.x;
     }else{
-	    n_block = 
+	    n_block = n-(blockIdx.x*blockDim.x);
     }
     int pout = 0, pin = 1;
     // load input into shared memory. 
     // **exclusive** scan: shift right by one element and set first output to 0
     temp[thid] = g_idata[idx];
     __syncthreads();
-    unsigned int threshold = ceil(log2((double)n));
+    unsigned int threshold = ceil(log2((double)n_block));
 
     for(unsigned int power = 0; power<threshold; power++) {
         unsigned offset = pow(2, power);
@@ -28,22 +29,24 @@ __global__ void hillis_steele(const float *g_idata, float *g_odata, float *block
         pin  = 1 - pin;
 
         if (thid >= offset){
-		temp[pout*n+thid] = temp[pin*n+thid] + temp[pin*n+thid - offset];
+		temp[pout*n_block+thid] = temp[pin*n_block+thid] + temp[pin*n_block+thid - offset];
         }
         else{
-		temp[pout*n+thid] = temp[pin*n+thid];
+		temp[pout*n_block+thid] = temp[pin*n_block+thid];
         }
 
         __syncthreads(); // I need this here before I start next iteration 
     }
     
-    g_odata[thid] = temp[pout*n+thid]; // write output
+    g_odata[idx] = temp[pout*n_block+thid]; // write output
     __syncthreads();
     if(record_block_sum)
     {
-        if((thid == blockDim.x-1)||(blockIdx.x*blockDim.x+thid == n-1)){
-            block_sum[blockIdx.x] = g_odata[thid];
+        if((thid == blockDim.x-1)||(idx == n-1)){
+		std::printf("block:%u, idx:%u\n", blockIdx.x, idx);
+            block_sum[blockIdx.x] = g_odata[idx];
         }
+    }
     }
 }
 
@@ -71,11 +74,23 @@ __host__ void scan(const float* input, float* output, unsigned int n, unsigned i
 	}
 	hillis_steele<<<num_blocks, threads_per_block, 2*threads_per_block*sizeof(float)>>>(input, output, block_sum, n, true);
 	cudaDeviceSynchronize();
+	std::printf("After Hillis Steele on each individual block\n");
+	for(unsigned int i = 0; i < n; i++){
+		std::printf("output[%u] = %f\n", i, output[i]);
+	}
+	std::printf("block sums\n");
+	for(unsigned int i = 0; i < num_blocks; i++){
+		std::printf("block_sum[%u] = %f\n", i, block_sum[i]);
+	}
 	
 	//scanned each block internally and stored their full sum in block_sum, now perform inclusive scan on block_sum
     	//n < threads_per_block * threads_per_block, so in next step we only need 1 block
     	hillis_steele<<<1, num_blocks, 2*num_blocks*sizeof(float)>>>(block_sum, apply_sum, (float *)nullptr, n, false);
     	cudaDeviceSynchronize();
+	std::printf("After Hillis Steele on block_sums\n");
+	for(unsigned int i = 0; i < num_blocks; i++){
+		std::printf("apply_sum[%u] = %f\n", i, apply_sum[i]);
+	}
     	//computed extra sum to be added to each block respectively, now apply to the blocks
     	apply_sum_to_blocks<<<num_blocks, threads_per_block>>>(output, apply_sum, n);
     	cudaDeviceSynchronize();
