@@ -22,11 +22,21 @@ int main(int argc, char* argv[]) {
 	    output[i] = 0.0;
     }
 
-    scan(input, output, n, threads_per_block);
+    //creating cuda timing variables
+    cudaEvent_t start;
+    cudaEvent_t stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
-    for(unsigned int i = 0; i < n; i++){
-	    printf("output[%u] = %f\n", i, output[i]);
-    }
+    cudaEventRecord(start);
+    scan(input, output, n, threads_per_block);
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    
+    // Get the elapsed time in milliseconds
+    float ms = 0.0;
+    cudaEventElapsedTime(&ms, start, stop);
+    printf("%f\n%f", output[n-1], ms);
 
     cudaFree(input);
     cudaFree(output);

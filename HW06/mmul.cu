@@ -5,8 +5,9 @@
 void mmul(cublasHandle_t handle, const float* A, const float* B, float* C, int n){
     const float alpha = 1.0;
     const float beta = 1.0;
-    const float *alpha_ptr = &alpha;
-    const float *beta_ptr = &beta;
-    cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, n, n, n, alpha_ptr, A, n, B, n, beta_ptr, C, n);
+    const float *ptr1 = &alpha;
+    const float *ptr2 = &beta;
+    cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, n, n, n, ptr1, A, n, B, n, ptr2, C, n);
     cudaDeviceSynchronize();
+
 }

@@ -74,24 +74,13 @@ __host__ void scan(const float* input, float* output, unsigned int n, unsigned i
 	}
 	hillis_steele<<<num_blocks, threads_per_block, 2*threads_per_block*sizeof(float)>>>(input, output, block_sum, n, true);
 	cudaDeviceSynchronize();
-	std::printf("After Hillis Steele on each individual block\n");
-	for(unsigned int i = 0; i < n; i++){
-		std::printf("output[%u] = %f\n", i, output[i]);
-	}
-	std::printf("block sums\n");
-	for(unsigned int i = 0; i < num_blocks; i++){
-		std::printf("block_sum[%u] = %f\n", i, block_sum[i]);
-	}
 	
 	//scanned each block internally and stored their full sum in block_sum, now perform inclusive scan on block_sum
     	//n < threads_per_block * threads_per_block, so in next step we only need 1 block
     	hillis_steele<<<1, num_blocks, 2*num_blocks*sizeof(float)>>>(block_sum, apply_sum, (float *)nullptr, n, false);
     	cudaDeviceSynchronize();
-	std::printf("After Hillis Steele on block_sums\n");
-	for(unsigned int i = 0; i < num_blocks; i++){
-		std::printf("apply_sum[%u] = %f\n", i, apply_sum[i]);
-	}
-    	//computed extra sum to be added to each block respectively, now apply to the blocks
+    	
+	//computed extra sum to be added to each block respectively, now apply to the blocks
     	apply_sum_to_blocks<<<num_blocks, threads_per_block>>>(output, apply_sum, n);
     	cudaDeviceSynchronize();
 
