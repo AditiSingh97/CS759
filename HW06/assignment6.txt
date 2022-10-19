@@ -1,3 +1,0 @@
-1a) All Level-1 functions perform operations involving scalars and/or vectors. Level-2 functions perform operations involving vectors and/or matrices. Level-3 functions performm operations involving matrices only. This implies that the functions are classified based on their input types (scalar, vector, matrix).
-
-b)
