@@ -43,7 +43,6 @@ __global__ void hillis_steele(const float *g_idata, float *g_odata, float *block
     if(record_block_sum)
     {
         if((thid == blockDim.x-1)||(idx == n-1)){
-		std::printf("block:%u, idx:%u\n", blockIdx.x, idx);
             block_sum[blockIdx.x] = g_odata[idx];
         }
     }

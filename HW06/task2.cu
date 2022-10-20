@@ -17,8 +17,13 @@ int main(int argc, char* argv[]) {
     cudaMallocManaged(&input, n*sizeof(float));
     cudaMallocManaged(&output, n*sizeof(float));
 
+    //random number generation
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dist(-1, 1);
+
     for(unsigned int i = 0; i < n; i++){
-	    input[i] = (float)i+1;
+	    input[i] = dist(gen);
 	    output[i] = 0.0;
     }
 
@@ -36,7 +41,7 @@ int main(int argc, char* argv[]) {
     // Get the elapsed time in milliseconds
     float ms = 0.0;
     cudaEventElapsedTime(&ms, start, stop);
-    printf("%f\n%f", output[n-1], ms);
+    printf("%f\n%f\n", output[n-1], ms);
 
     cudaFree(input);
     cudaFree(output);
