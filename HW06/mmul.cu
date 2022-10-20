@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include "mmul.h"
 
+//some code taken from https://solarianprogrammer.com/2012/05/31/matrix-multiplication-cuda-cublas-curand-thrust/
 void mmul(cublasHandle_t handle, const float* A, const float* B, float* C, int n){
     const float alpha = 1.0;
     const float beta = 1.0;

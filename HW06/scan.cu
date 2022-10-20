@@ -4,6 +4,7 @@
 
 #include "scan.cuh"
 
+//some code taken from CS759 Lecture 15
 __global__ void hillis_steele(const float *g_idata, float *g_odata, float *block_sum, unsigned int n, bool record_block_sum = false) {
     extern volatile __shared__  float temp[]; // allocated on invocation
 
