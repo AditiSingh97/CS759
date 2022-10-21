@@ -68,7 +68,7 @@ __host__ void scan(const float* input, float* output, unsigned int n, unsigned i
 	float *block_sum, *apply_sum;
 	cudaMallocManaged(&block_sum, num_blocks*sizeof(float));
 	cudaMallocManaged(&apply_sum, num_blocks*sizeof(float));
-	for(unsigned int i = 0; i < num_blocks; i++){
+	for(int i = 0; i < num_blocks; i++){
 		block_sum[i] = (float)0.0;
 		apply_sum[i] = (float)0.0;
 	}
