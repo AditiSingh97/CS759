@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     cudaEventCreate(&stop);
 
     float ms = 0.0;
-    for(int i = 0; i < n_tests; i++){
+    for(unsigned int i = 0; i < n_tests; i++){
 	cudaMallocManaged(&A, SIZE*sizeof(float));
         cudaMallocManaged(&B, SIZE*sizeof(float));
         cudaMallocManaged(&C, SIZE*sizeof(float));
