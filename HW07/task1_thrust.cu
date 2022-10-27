@@ -4,11 +4,7 @@
 #include <thrust/generate.h>
 #include <iostream>
 #include <cuda.h>
-
-__host__ static __inline__ float rand_01()
-{
-    return ((float)rand()/RAND_MAX);
-}
+#include <random>
 
 int main(int argc, char *argv[]) {
     if(argc != 2){
@@ -17,7 +13,14 @@ int main(int argc, char *argv[]) {
     unsigned n = atoi(argv[1]);
     // generate n random float numbers on the host
     thrust::host_vector<float> h_vec(n);
-    thrust::generate(h_vec.begin(), h_vec.end(), rand_01);
+    //random number generation
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dist(-1.0, 1.0);
+
+    for(unsigned i = 0; i< n; i++){
+	    h_vec[i] = dist(gen);
+    }
     
     // transfer data to the device
     thrust::device_vector<float> d_vec(n);
