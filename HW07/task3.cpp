@@ -22,6 +22,9 @@ int main() {
 #pragma omp parallel
 	{
 		std::printf("I am thread No. %d\n", omp_get_thread_num());
+	}
+#pragma omp parallel
+	{
 		int num1 = omp_get_thread_num()*2+1;
 		int num2 = omp_get_thread_num()*2+2;
 		int fact1 = factorial(num1);
