@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
         h_in[i] = dist(gen);
     }
 
+    //grountruth computation
     float sum = 0.0;
     for (unsigned int i = 0; i < num_items; i++)
         sum += h_in[i];
