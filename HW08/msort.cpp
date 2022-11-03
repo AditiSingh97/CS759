@@ -17,56 +17,56 @@
 using namespace std;
 
 void merge(int *arr, size_t n) {
+    //temporary array to copy merged results
     int *tmp = new int[n];
     memset(tmp, 0, n*sizeof(int));
-    size_t i = 0;
-    size_t j = n/2;
-    size_t ti = 0;
+    size_t p1 = 0;
+    size_t p2 = n/2;
+    size_t curr_tmp = 0;
 
-    while ((i < n/2) && (j < n)) {
-        if (arr[i] < arr[j]) {
-            tmp[ti] = arr[i];
-            ti++;
-            i++;
+    //compare and cppy elements from arr to tmp, increment appropriate pointers
+    while ((p1 < n/2) && (p2 < n)) {
+        if (arr[p1] < arr[p2]) {
+            tmp[curr_tmp] = arr[p1];
+            curr_tmp++;
+            p1++;
         }
         else {
-            tmp[ti] = arr[j];
-            ti++;
-            j++;
+            tmp[curr_tmp] = arr[p2];
+            curr_tmp++;
+            p2++;
         }
     }
-    while (i < (n/2)) { /* finish up lower half */
-        tmp[ti] = arr[i];
-        ti++;
-        i++;
+    while (p1 < (n/2)) { /* finish up lower half */
+        tmp[curr_tmp] = arr[p1];
+        curr_tmp++;
+        p1++;
     }
     
-    while (j < n) { /* finish up upper half */
-        tmp[ti] = arr[j];
-        ti++;
-        j++;
+    while (p2 < n) { /* finish up upper half */
+        tmp[curr_tmp] = arr[p2];
+        curr_tmp++;
+        p2++;
     }
-    /*
-     * for(size_t k = 0; k < n; k++){
-        std::cout << "tmp[" << k << "]=" << tmp[k] ;
-    }
-    std::cout << std::endl;
-    */
-
+    
+    //copy results back to arr
     memcpy(arr, tmp, n*sizeof(int));
 } 
 
 void msort(int* arr, const std::size_t n, const std::size_t threshold){
     //if n < threshold, perform tasks serially
     //if n>= threshold, perform tasks parallely
-    if (n < 2) return;
-    
+    if (n < 2)
+    {
+        return;
+    }
+    //sort first half
 #pragma omp task shared(arr) if (n >= threshold)
-    //msort(arr, n/2, tmp);
     msort(arr, n/2, threshold);
+    //sort second half
 #pragma omp task shared(arr) if (n >= threshold)
-   //msort(arr+(n/2), n-(n/2), tmp + n/2);
    msort(arr+(n/2), n-(n/2), threshold);
+   //wait for both sorts to finish, then merge
 #pragma omp taskwait
    merge(arr, n);
 

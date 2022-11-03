@@ -10,14 +10,20 @@
 
 void convolve(const float *image, float *output, std::size_t n, const float *mask, std::size_t m){
     std::size_t mm = (m-1)/2;
+//the following pragma directive is sufficient to parallelize the outermost for loop
+//code directly takn from HW02 code for convolution
 #pragma omp parallel for
     for(std::size_t i = 0; i < n; i++){
         for(std::size_t j = 0; j < n ; j++){
+            //intermeditae result ans
             float ans = 0.0;
+            //starting loops for mask
             for(std::size_t k = 0; k < m; k++){
                 for(std::size_t l = 0; l < m; l++){
+                    //calculating limits
                     std::size_t t1 = i + k - mm;
                     std::size_t t2 = j + l -mm;
+                    //accounting for corner cases
                     if(((t1 < 0) || (t1 >= n)) && ((t2 < 0) || (t2 >= n))){
                         ans += 0.0;
                     }else{
@@ -29,6 +35,7 @@ void convolve(const float *image, float *output, std::size_t n, const float *mas
                     }
                 }
             }
+            //copying intermediate result to output
             *(output + i * n + j) = ans;
         }
     }

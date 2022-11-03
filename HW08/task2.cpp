@@ -10,6 +10,7 @@ using std::chrono::high_resolution_clock;
 using std::chrono::duration;
 using namespace std;
 
+//verifier function to check correctness
 void convolve_verif(const float *image, float *output, std::size_t n, const float *mask, std::size_t m){
     std::size_t mm = (m-1)/2;
     for(std::size_t i = 0; i < n; i++){
@@ -40,15 +41,20 @@ int main(int argc, char **argv){
         exit(-1);
     }
 
+    //parsing command line args
     std::size_t n = atoi(argv[1]);
     int t = atoi(argv[2]);
     size_t SIZE = n*n;
 
+    //input image declaratiom
     float *image = new float[SIZE];
+    //mask declaration
     float *mask = new float[9];
+    //output declaration
     float *output = new float[SIZE];
 //    float *gt = new float[SIZE];
     
+    //generating random floats
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist1(-10.0, 10.0);
@@ -68,15 +74,20 @@ int main(int argc, char **argv){
         }
     }
 
+    //setting number of threads
     omp_set_num_threads(t);
+    //initializing timer objects
     high_resolution_clock::time_point start;
     high_resolution_clock::time_point end;
     duration<double, std::milli> duration_msec;
 
     start = high_resolution_clock::now();
+    //function call
     convolve(image, output, n, mask, 3);
     end = high_resolution_clock::now();
+
     /*
+     * to verify if output is correct
     convolve_verif(image, gt, n, mask, 3);
 
     for(size_t i = 0; i < n; i++){
