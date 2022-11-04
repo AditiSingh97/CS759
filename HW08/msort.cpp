@@ -60,14 +60,37 @@ void msort(int* arr, const std::size_t n, const std::size_t threshold){
     {
         return;
     }
-    //sort first half
-#pragma omp task shared(arr) if (n >= threshold)
-    msort(arr, n/2, threshold);
-    //sort second half
-#pragma omp task shared(arr) if (n >= threshold)
-   msort(arr+(n/2), n-(n/2), threshold);
-   //wait for both sorts to finish, then merge
+    if(n < threshold){
+        int i, j;
+        int key = 0;
+        for (i = 0; i < n; i++)
+        {
+            key = *(arr + i);
+            j = i - 1;
+
+            // Move elements of arr[0..i-1], 
+            // that are greater than key, to one
+            // position ahead of their
+            // current position
+            while (j >= 0 && *(arr + j) > key)
+            {
+                *(arr + j + 1) = *(arr + j);
+                j = j - 1;
+            }
+            *(arr + j + 1) = key;
+        }
+    }
+    else{
+        //sort first half
+
+#pragma omp task
+        msort(arr, n/2, threshold);
+        //sort second half
+#pragma omp task
+        msort(arr+(n/2), n-(n/2), threshold);
+    }
+        //wait for both sorts to finish, then merge
 #pragma omp taskwait
-   merge(arr, n);
+        merge(arr, n);
 
 }
