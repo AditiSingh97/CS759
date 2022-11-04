@@ -41,7 +41,11 @@ int main(int argc, char **argv){
 
     start = high_resolution_clock::now();
     //function call
-    msort(arr, n, ts);
+#pragma omp parallel
+    {
+      #pragma omp single
+       msort(arr, n, ts);
+    } 
     end = high_resolution_clock::now();
 
     duration_msec = std::chrono::duration_cast<duration<double, std::milli>>(end - start);
