@@ -54,20 +54,40 @@ void merge(int *arr, size_t n) {
 } 
 
 void msort(int* arr, const std::size_t n, const std::size_t threshold){
-    //if n < threshold, perform tasks serially
-    //if n>= threshold, perform tasks parallely
+    //if n < threshold, perform sort serially
+    //if n>= threshold, perform sort parallely
     if (n < 2)
     {
         return;
     }
-    //sort first half
-#pragma omp task shared(arr) if (n >= threshold)
-    msort(arr, n/2, threshold);
-    //sort second half
-#pragma omp task shared(arr) if (n >= threshold)
-   msort(arr+(n/2), n-(n/2), threshold);
-   //wait for both sorts to finish, then merge
+    if(n < threshold){
+	//implementing serial insertion sort
+        int i, j;
+        int key = 0;
+        for (i = 0; i < n; i++)
+        {
+            key = *(arr + i);
+            j = i - 1;
+
+            while (j >= 0 && *(arr + j) > key)
+            {
+                *(arr + j + 1) = *(arr + j);
+                j = j - 1;
+            }
+            *(arr + j + 1) = key;
+        }
+    }
+    else{
+        //sort first half
+
+#pragma omp task
+        msort(arr, n/2, threshold);
+        //sort second half
+#pragma omp task
+        msort(arr+(n/2), n-(n/2), threshold);
+    }
+        //wait for both sorts to finish, then merge
 #pragma omp taskwait
-   merge(arr, n);
+        merge(arr, n);
 
 }
