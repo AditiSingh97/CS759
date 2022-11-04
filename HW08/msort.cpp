@@ -62,7 +62,6 @@ void msort(int* arr, const std::size_t n, const std::size_t threshold){
     }
     if(n < threshold){
 	//implementing serial insertion sort
-        int i, j;
         int key = 0;
         for (i = 0; i < n; i++)
         {
