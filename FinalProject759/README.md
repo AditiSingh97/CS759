@@ -1,6 +1,12 @@
 # dynamic-embeddings
 
-#### The repository contains the following implementations. The code in the github repository is linked for each. ####
+### Euler Machine Instructions
+1. Machine should have latest Anaconda installed.
+2. Add Anaconda to the $PATH variable.
+
+### Repository Internals
+The repository contains the following implementations. The code in the github repository is linked for each.
+The links currently lead to an external GitHub repository which is the origin of this code and safe to visit.
 
 1. Generate [static HOPE embeddings](https://github.com/marius-team/dynamic-embeddings/blob/0c1b89e3b0dc4b45ac208af808a050bb864db74a/dyn_embed.py#L569) for a graph supplied as a bin file (specific format : __(source node id)__ __(#edge originating from preceding node)__ __(the destinations of these edges…)__). Embeddings can be generated using three proximity metrics - [Katz](https://github.com/marius-team/dynamic-embeddings/blob/0c1b89e3b0dc4b45ac208af808a050bb864db74a/dyn_embed.py#L379), [Common Neighbors](https://github.com/marius-team/dynamic-embeddings/blob/0c1b89e3b0dc4b45ac208af808a050bb864db74a/dyn_embed.py#L455), and [Adamic Adar](https://github.com/marius-team/dynamic-embeddings/blob/0c1b89e3b0dc4b45ac208af808a050bb864db74a/dyn_embed.py#L486). 
   
@@ -14,3 +20,5 @@ _This method works correctly when the additive matrices have only a single colum
 5. Given a graph and its smaller subgraph, run a series of dynamic HOPE embeddings on the small graph, continuously growing it through edge and vertex additions to become the larger graph. The embeddings can be optionally saved after each round.
 A tool to generate random subgraphs of a given graph. The input is a simple list of edges and the output is a bin format of the new graph (in the aforementioned format). It also adds and deleted edges and vertices to an input graph.
 6. Some utilities to convert .bin to .txt and vice versa, convert .csv to .bin
+
+
