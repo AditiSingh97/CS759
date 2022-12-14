@@ -4,13 +4,12 @@ import logging
 import pygsvd
 import struct
 import sys
-print(sys.version)
 import time
-import numba
+import numba.cuda as cuda
 from pyculib.blas import Blas
+import pyculib.blas as cublas
 import os
 import scipy
-print(scipy.__version__)
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import svds
 from scipy.sparse.linalg import inv
@@ -934,10 +933,12 @@ def incr_common_nghbrs():
  #   X_hat = update_common_nghbrs(X_inmdt, X_diff, vert_added, output_embs_prefix, dimensions)
    
 if __name__ == "__main__":
+    blas = Blas()
     y = np.asarray([[1.0], [2.0]])
-    print(y.shape)
-    print(type(y))
-    Blas.nrm2(y)
+    y_d = cuda.to_device(y)
+    x = np.random.random(2).astype(np.float32)
+    norm = blas.nrm2(x)
+    print(norm)
     exit(-1)
     #incr_common_nghbrs()
     #static_embs()
