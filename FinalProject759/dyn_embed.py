@@ -4,9 +4,13 @@ import logging
 import pygsvd
 import struct
 import sys
+print(sys.version)
 import time
+import numba
+from pyculib.blas import Blas
 import os
 import scipy
+print(scipy.__version__)
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import svds
 from scipy.sparse.linalg import inv
@@ -120,34 +124,39 @@ def GenSvdUpdate(U, S, V, a, b, rank):
     if V is not None:
         V = V[:,:rank]
 
-    """
     print("Inside low-rank incr-SVD")
     print("U shape : ", U.shape)
     print("S shape : ", S.shape)
     print("V shape : ", V.shape)
     print("a shape : ", a.shape)
     print("b shape : ", b.shape)
-    """
 
     I = np.eye(len(U))
 
     QR1 = np.matmul(I-(np.matmul(U,U.T)),a)
     print("QR1 :", QR1.shape)
-    P,R = np.linalg.qr(QR1)
+    start = time.time()
+    #P,R = np.linalg.qr(QR1)
+
+    end  = time.time()
+    print("QR decomposition time: ", end-start)
     print("P :", P.shape)
     print("R :", R.shape)
     Ra = np.matmul(P.T, QR1)
+    end = time.time()
     print("Ra :", Ra.shape)
 
 
     QR2 = np.matmul(I-(np.matmul(V,V.T)),b)
     Q,_ = np.linalg.qr(QR2)
+    print("Q : ", Q.shape)
     Rb = np.matmul(Q.T, QR2)
     print("Rb :", Rb.shape)
 
     # eq (8)
     # form the new matrix
     K_1 = np.diag(np.append(S, 0.0))
+    print("K_1 :", K_1.shape)
 
     K_2_1_1 = np.matmul(U.T,a)
     print("K_2_1_1 : ", K_2_1_1.shape)
@@ -363,7 +372,7 @@ def return_prox_mat_aa(X):
 
     D_csr = csr_matrix(D)
     X_csr = csr_matrix(X)
-    Ml = X_csr@(D_csr@X_csr)
+    Ml = np.matmul(X_csr, np.matmul(D_csr, X_csr))
 
     return Mg,Ml
 
@@ -383,7 +392,7 @@ def katz_full(X, dim, prox_param):
     Ml_sparse = csr_matrix(Ml)
     S = Mg_inv_sparse.multiply(Ml_sparse)
     """
-    S_sparse=Mg_inv@Ml
+    S_sparse=np.matmul(Mg_inv, Ml)
 
     U,S,VT = svds(S_sparse, k=dim, which='LM')
     return calculate_vectors_alt(U,S,VT,dim)
@@ -408,7 +417,7 @@ def katz_partial(X,dim,prox_param):
 def incr_katz_full(X,A,B,dim,prox_param):
     Mg,Ml = return_prox_mat_katz_full(X, prox_param)
     Mg_inv =  inv(Mg)
-    S_sparse  = Mg_inv@Ml
+    S_sparse  = np.matmul(Mg_inv, Ml)
     U, S, VT = svds(S_sparse, k=dim, which='LM')
     print("S_dense :" ,S_sparse.shape)
     Up,Sp,Vp = svdUpdate(U, S, VT.T, ((-1)*prox_param)*A, B, dim)
@@ -419,7 +428,7 @@ def incr_katz_full(X,A,B,dim,prox_param):
 def svd_hope_full(X,dim, prox_param):
     Mg,Ml = return_prox_mat_katz_full(X, prox_param)
     Mg_inv =  inv(Mg)
-    S_dense  = Mg_inv@Ml
+    S_dense  = np.matmul(Mg_inv, Ml)
     S_sparse = csr_matrix(S_dense)
     
     U, S, VT = svds(S_sparse, k=dim, which='LM')
@@ -485,7 +494,7 @@ def common_nghbrs_factorize(X,Y, non_zero_idx):
 
 def adamic_adar(X, dim):
     Mg,Ml = return_prox_mat_aa(X)
-    S_sparse = Mg@Ml
+    S_sparse = np.matmul(Mg, Ml)
     U,S,VT = svds(S_sparse, k=dim, which='LM')
     return calculate_vectors_alt(U,S,VT,dim)
 
@@ -580,7 +589,7 @@ def static_embs():
 
     #enter desired embedding function in the following line
     s = time.time()
-    source, target = katz_partial(X,dimensions,beta)
+    source, target = katz_full(X,dimensions, beta)
     print(time.time()-s)
     save_embeddings_bin(output_embs_prefix, source, target)
     save_mappings(output_embs_prefix)
@@ -854,6 +863,8 @@ def update_common_nghbrs(X1, X_diff, src_dict, edge_added, output_embs_prefix, d
     return X_s
     """    
 
+#this the primary function for checking incremental HOPE
+#has been run before and verified for correctness
 # runs a series of rank-1 svdUpdates and calculates embeddings after each update (currently : does not save any except the final stage, uses full hope)
 def incr_hope_series():
     """
@@ -888,6 +899,7 @@ def incr_hope_series():
 
     print("diff between X_hat and X2 :" ,np.any(X_hat-X2))
 
+#buggy GenSVD
 def incr_common_nghbrs():
     """
     arguments : input smaller graph as bin, input larger graph with added edges as bin 
@@ -918,9 +930,15 @@ def incr_common_nghbrs():
 
     # first update edge additions.
     # NOTE : currently, vertex additions also behave like edge additions, a row which was entirely zero in initial graph is populated with ones
-    X_hat = update_common_nghbrs(X1, X_diff,src_dict, edge_added, output_embs_prefix, dimensions)
+    X_hat = update_common_nghbrs(X1, X_diff, src_dict, edge_added, output_embs_prefix, dimensions)
  #   X_hat = update_common_nghbrs(X_inmdt, X_diff, vert_added, output_embs_prefix, dimensions)
    
 if __name__ == "__main__":
+    y = np.asarray([[1.0], [2.0]])
+    print(y.shape)
+    print(type(y))
+    Blas.nrm2(y)
+    exit(-1)
     #incr_common_nghbrs()
-    static_embs()
+    #static_embs()
+    #incr_hope_series()
