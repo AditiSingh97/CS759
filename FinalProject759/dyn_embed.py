@@ -6,8 +6,7 @@ import struct
 import sys
 import time
 import numba.cuda as cuda
-from pyculib.blas import Blas
-import pyculib.blas as cublas
+import cupy as cp
 import os
 import scipy
 from scipy.sparse import csr_matrix
@@ -135,7 +134,7 @@ def GenSvdUpdate(U, S, V, a, b, rank):
     QR1 = np.matmul(I-(np.matmul(U,U.T)),a)
     print("QR1 :", QR1.shape)
     start = time.time()
-    #P,R = np.linalg.qr(QR1)
+    P,R = np.linalg.qr(QR1)
 
     end  = time.time()
     print("QR decomposition time: ", end-start)
@@ -933,13 +932,19 @@ def incr_common_nghbrs():
  #   X_hat = update_common_nghbrs(X_inmdt, X_diff, vert_added, output_embs_prefix, dimensions)
    
 if __name__ == "__main__":
-    blas = Blas()
-    y = np.asarray([[1.0], [2.0]])
-    y_d = cuda.to_device(y)
-    x = np.random.random(2).astype(np.float32)
-    norm = blas.nrm2(x)
-    print(norm)
-    exit(-1)
+   
+    Y = np.random.rand(2000,2000)
+    y = cp.asarray(Y)
+    #y_d = cuda.to_device(y)
+    #x = np.random.random(2000).astype(np.float32)
+    s = time.time()
+    q, r = cp.linalg.qr(y)
+    print(time.time()-s)
+    print(cp.matmul(q,r) - y)
+    s = time.time()
+    Q,R = np.linalg.qr(Y)
+    print(time.time()-s)
+    print(np.matmul(Q,R) - Y)
     #incr_common_nghbrs()
     #static_embs()
     #incr_hope_series()
