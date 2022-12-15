@@ -1,8 +1,10 @@
 # dynamic-embeddings
 
 ### Euler Machine Instructions
-1. Machine should have latest Anaconda installed.
-2. Add Anaconda to the $PATH variable.
+1. To run **[qr_cublas.py](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/qr_cublas.py)**, **[qr_cupy.py](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/qr_cupy.py)**, and **[qr_np.py](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/qr_np.py)** machine should have python 3.10 and compatible Numpy and CuPy installed. For Euler's GPU and driver, CuPy eeds to be installed fro CUDA 11.4
+2. All three files qr_cublas.py, qr_cupy.py and qr_np.py can be called as `python <file> <n: size of square matrix>`. A matrix of n*n elements will be used initialized with random floats and factorized using QR factorization.
+3. The files **[qr.cuh](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/qr.cuh)** and **[qr.cu](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/qr.cu)** contain some code for Thrust implementation of QR-factorization but the code is not complete yet. To build it, we need to load modules in euler as follows `module load nvidia/cuda gcc/9.4.0`
+4. In **[dyn_embed.py](https://git.doit.wisc.edu/SINGH273/repo759/-/blob/245e508431cd7ffacdd14445fe276f5012856c0d/FinalProject759/dyn_embed.py)**, the function `GenSvdUpdate()` implements end-to-end incremental SVD using QR-factorization at some steps. This is however currently semantically buggy towards the end.
 
 ### Repository Internals
 The repository contains the following implementations. The code in the github repository is linked for each.
