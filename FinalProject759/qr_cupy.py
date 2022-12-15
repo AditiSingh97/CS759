@@ -16,7 +16,9 @@ if __name__ == "__main__":
     n = int(sys.argv[1])
     y = cp.asarray(np.random.rand(n,n))
     print(n)
-    print(benchmark(cp.linalg.qr, (y, ), n_repeat=1000))
+    s=time.time()
+    q, r = cp.linalg.qr(y)
+    print(time.time()-s)
     del y
     gc.collect()
 

@@ -14,9 +14,11 @@ gc.collect()
 
 if __name__ == "__main__":
     n = int(sys.argv[1])
-    y = cp.asarray(np.random.rand(n,n))
+    y = np.random.rand(n,n)
     print(n)
-    print(benchmark(cp.linalg.qr, (y, ), n_repeat=1000))
+    s = time.time()
+    q, r = np.linalg.qr(y)
+    print(time.time()-s)
     del y
     gc.collect()
 
